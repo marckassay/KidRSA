@@ -1,7 +1,7 @@
 class AsymmetricKeys {
-    [int]$n
     [int]$e
     [int]$d
+    [int]$n
 
     AsymmetricKeys([int]$a, [int]$b, [int]$a_, [int]$b_) {
         $M = ($a * $b) - 1

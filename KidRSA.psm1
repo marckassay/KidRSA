@@ -29,32 +29,66 @@ function Get-RSAKey {
         [Parameter(Mandatory = $false)]
         [int]$b_ = $(Get-Random -Minimum -1 -Maximum 100)
     )
-    [AsymmetricKeys]::new($a, $b, $a_, $b_)
+
+    Write-Verbose -Message "The value for 'a' is: $($a)"
+    Write-Verbose -Message "The value for 'b' is: $($b)"
+    Write-Verbose -Message "The value for 'a_' is: $($a_)"
+    Write-Verbose -Message "The value for 'b_' is: $($b_)"
+
+    $Keys = [AsymmetricKeys]::new($a, $b, $a_, $b_)
+
+    Write-Verbose -Message "The value of Private key 'e' (encrypt) is: $($Keys.e)"
+    Write-Verbose -Message "The value of Public key 'd' (decrypt) is: $($Keys.d)"
+    Write-Verbose -Message "The value of 'n' is: $($Keys.n)"
+
+    $Keys 
 }
 
-function Encrypt-PlainText {
+function Step-PrivateKeyModN {
     [CmdletBinding()]
     Param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $false)]
         [ValidatePattern("^[a-zA-Z]+$")]
         [string]$Value,
 
-        [hashtable]$Key
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNull()]
+        [int]$EncyptedValue,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNull()]
+        [int]$PrivateKey,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNull()]
+        [int]$N
     )
-
-    $c = ConvertTo-CipherInt -PlainText $Value
-
-    $ciphertext = ($Key.e * $c) % $Key.n
+    if ($Value) {
+        $c = ConvertTo-CipherInt -PlainText $Value
+    }
+    else {
+        $c = $EncyptedValue
+    }
+    $ciphertext = ($PrivateKey * $c) % $N
+    Write-Verbose -Message "Ciphertext value is : $($ciphertext)"
     $ciphertext
 }
 
-function Decrypt-CipherText {
+function Step-PublicKeyModN {
     Param(
-        [int]$cipherext,
-        [hashtable]$Key
+        [int]$Value,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNull()]
+        [int]$PublicKey,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNull()]
+        [int]$N
     )
-    $plaintext = ($Key.d * $cipherext) % $Key.n
-    $plaintext
+    $et = ($PublicKey * $Value) % $N
+    Write-Verbose -Message "Encrypted value is : $($et)"
+    $et
 }
 
 function ConvertTo-CipherInt {
@@ -70,12 +104,15 @@ function ConvertTo-CipherInt {
     $Base26 = Get-IsomorphicMap
     $Pointer = 0
     $Value = 0
+    
     while ($Pointer -lt $PlainText.Length) {
         $Character = $PlainText[$Pointer]
         $Value += $Base26[$Character] * [System.Math]::Pow(26, $($PlainText.Length - $Pointer - 1))
         $Pointer++
     }
-    $Value * 10
+    $Value = $Value * 10
+    Write-Verbose -Message "Ciphertext value is : $Value"
+    $Value
 }
 
 function ConvertTo-PlainText {
