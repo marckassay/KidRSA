@@ -44,16 +44,12 @@ function Get-RSAKey {
     $Keys 
 }
 
-function Step-PrivateKeyModN {
+function Step-PrivateDecryptKey {
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $false)]
-        [ValidatePattern("^[a-zA-Z]+$")]
-        [string]$Value,
-
-        [Parameter(Mandatory = $false)]
         [ValidateNotNull()]
-        [int]$EncyptedValue,
+        [int]$EncryptedCipherText,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNull()]
@@ -63,20 +59,17 @@ function Step-PrivateKeyModN {
         [ValidateNotNull()]
         [int]$N
     )
-    if ($Value) {
-        $c = ConvertTo-CipherInt -PlainText $Value
-    }
-    else {
-        $c = $EncyptedValue
-    }
-    $ciphertext = ($PrivateKey * $c) % $N
-    Write-Verbose -Message "Ciphertext value is : $($ciphertext)"
-    $ciphertext
+
+    $PlainTextValue = ($PrivateKey * $EncryptedCipherText) % $N
+    Write-Verbose -Message "PlainTextValue value is : $($PlainTextValue)"
+    $PlainTextValue
 }
 
-function Step-PublicKeyModN {
+function Step-PublicEncryptKey {
     Param(
-        [int]$Value,
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNull()]
+        [int]$CipherText,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNull()]
@@ -86,9 +79,9 @@ function Step-PublicKeyModN {
         [ValidateNotNull()]
         [int]$N
     )
-    $et = ($PublicKey * $Value) % $N
-    Write-Verbose -Message "Encrypted value is : $($et)"
-    $et
+    $EncryptedCipherText = ($PublicKey * $CipherText) % $N
+    Write-Verbose -Message "Encrypted cipher value is : $($EncryptedCipherText)"
+    $EncryptedCipherText
 }
 
 function ConvertTo-CipherInt {
