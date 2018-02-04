@@ -58,14 +58,6 @@ Describe "Alice gives Bob her public key for that he can send her an encrypt mes
 
             $Results = Step-PrivateDecryptKey -EncryptedCipherText $EncryptedCipherText -PrivateKey $PrivateKey -N $N -Verbose
             $Results | Should -Be 10410
-
-        }
-    }
-
-    Context "Alice takes the ciphered text (10410) and runs it thru the cipher's decode function." {
-        It "Should return plain text in the value of: 'BOB'" {
-            $CipherText = 10410
-            ConvertTo-PlainText $CipherText -Verbose | Should -Be 'BOB'
         }
     }
 }

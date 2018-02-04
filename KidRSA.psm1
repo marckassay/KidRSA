@@ -1,16 +1,25 @@
 using module .\src\KidRSA.AsymmetricKeys.psm1
 
-$script:Base26Table
 function Get-IsomorphicMap {
-    if ($script:Base26Table -eq $null) {
-        $script:Base26Table = @{}
-        0..25 | ForEach-Object {
-            $LetterKey = [System.Convert]::ToChar($_ + 65)
-            $script:Base26Table.Add($LetterKey, $_)
+    [CmdletBinding()]
+    [OutputType([hashtable])]
+    Param(
+        [Parameter(Mandatory = $true)]
+        [ValidateSet("Alpha", "Numeric")]
+        [string]$KeyType
+    )
+    
+    $Base26Table = @{}
+    0..25 | ForEach-Object {
+        $Alpha = [System.Convert]::ToChar($_ + 65)
+        if ($KeyType -eq "Alpha") {
+            $Base26Table.Add($Alpha, $_)
+        }
+        else {
+            $Base26Table.Add($_, $Alpha)
         }
     }
-
-    $script:Base26Table
+    $Base26Table
 }
 
 function Get-RSAKey {
@@ -94,7 +103,7 @@ function ConvertTo-CipherInt {
         [string]$PlainText
     )
 
-    $Base26 = Get-IsomorphicMap
+    $Base26 = Get-IsomorphicMap -KeyType Alpha
     $Pointer = 0
     $Value = 0
     
@@ -108,13 +117,48 @@ function ConvertTo-CipherInt {
     $Value
 }
 
+<#
+
+
+#>
+<#
+.SYNOPSIS
+Short description
+
+.DESCRIPTION
+Long description
+
+.PARAMETER CipherText
+Parameter description
+
+.EXAMPLE
+An example
+
+.NOTES
+Referenced def alphabet_encode:https://github.com/isaaguilar/alphabet-encode-python/blob/master/alphabet_cipher.py
+#>
 function ConvertTo-PlainText {
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $true,
-            Position = 0,
+            Position = 1,
             ValueFromPipeline = $false)]
         [ValidateNotNullOrEmpty()]
         [int]$CipherText
     )
+    
+    [int]$Q = $($CipherText / 10)
+    [ref]$R = 0
+
+    $Base26 = Get-IsomorphicMap -KeyType Numeric
+    while ($Q -ne 0) {
+        $Q = [System.Math]::DivRem($Q + 1, $Base26.Count, $R)
+        
+        if ($R.Value -eq 0) {
+            $Q = $Q - 1
+        }
+        
+        $Base += $($Base26[$R.Value - 1])
+    }
+    $Base
 }
