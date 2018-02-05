@@ -5,7 +5,7 @@ using module .\src\KidRSA.AsymmetricKeys.psm1
 Returns asymetric keys; Public Key and Private Key
 
 .DESCRIPTION
-To be used to encrypt and decrypt ciphered text values.
+To be used to encrypt and decrypt cipher text values.
 
 .PARAMETER a
 Any integer in the range of 1-100.
@@ -63,6 +63,28 @@ function Get-RSAKey {
     $Keys
 }
 
+<#
+.SYNOPSIS
+Decrypts the value from ConvertTo-PublicEncryptionValue function
+
+.DESCRIPTION
+Given a private and public key from Get-RSAKey function, the public key is used to encrypt a cipher text via ConvertTo-PublicEncryptionValue function.  The value from that function is used in this function to decrypt it using the private (d) key.
+
+.PARAMETER EncryptedCipherText
+The value from ConvertTo-PublicEncryptionValue
+
+.PARAMETER PrivateKey
+The private key to decrypt EncryptedCipherText parameter.  This is typically represented in mathematical operations as the letter 'd'.
+
+.PARAMETER N
+The key modulus of PrivateKey parameter value. This is typically represented in mathematical operations as the letter 'n'.
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 function ConvertTo-PrivateDecryptionValue {
     [CmdletBinding()]
     Param(
@@ -83,6 +105,29 @@ function ConvertTo-PrivateDecryptionValue {
     $PlainTextValue
 }
 
+<#
+.SYNOPSIS
+Encrypts the value from ConvertTo-CipherText function
+
+.DESCRIPTION
+Given a private and public key from Get-RSAKey function, the public key is used to encrypt cipher text.  The value returned from this 
+function is used in the ConvertTo-PrivateDecryptionValue function to decrypt it.
+
+.PARAMETER CipherText
+The value from ConvertTo-PublicEncryptionValue
+
+.PARAMETER PublicKey
+The public key to encrypt CipherText parameter.  This is typically represented in mathematical operations as the letter 'e'.
+
+.PARAMETER N
+The key modulus of PublicKey parameter value. This is typically represented in mathematical operations as the letter 'n'.
+
+.EXAMPLE
+An example
+
+.NOTES
+General notes
+#>
 function ConvertTo-PublicEncryptionValue {
     Param(
         [Parameter(Mandatory = $true)]
@@ -107,24 +152,10 @@ function ConvertTo-PublicEncryptionValue {
 Returns a morphic map of alpha and numeric values.
 
 .DESCRIPTION
-Used as a lookup table to encode or decode plain text or ciphered text
+Used as a lookup table to encode plain text or decode cipher text
 
 .PARAMETER KeyType
 Determines the type value for the keys of map.  Validate set of: "Alpha" or "Numeric".
-
-.EXAMPLE
-C:\> $map = Get-IsomorphicMap -KeyType Alpha
-C:\> $map['A']
-A
-C:\> $map[1]
-B
-
-.EXAMPLE
-C:\> $map = Get-IsomorphicMap -KeyType Numeric
-C:\> $map[0]
-A
-C:\> $map[1]
-B
 
 .NOTES
 General notes
@@ -153,22 +184,22 @@ function Get-IsomorphicMap {
 
 <#
 .SYNOPSIS
-Returns ciphered text from plain text.
+Returns cipher text from plain text.
 
 .DESCRIPTION
-Pass an alpha only string to this function to get a ciphered text value.
+Pass an alpha only string to this function to get a cipher text value.
 
 .PARAMETER PlainText
-Message to convert to ciphered text
+Message to convert to cipher text
 
 .EXAMPLE
-C:\> ConvertTo-PlainTextValue 'BOB'
+C:\> ConvertTo-PlainText 'BOB'
 C:\> 10410
 
 .NOTES
 This repo multiples the value by 10.
 #>
-function ConvertTo-CipheredTextValue {
+function ConvertTo-CipherText {
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $true,
@@ -194,23 +225,23 @@ function ConvertTo-CipheredTextValue {
 
 <#
 .SYNOPSIS
-Returns plain text from ciphered text.
+Returns plain text from cipher text.
 
 .DESCRIPTION
-The ConvertTo-CipheredTextValue takes plain text and returns ciphered text.  To reverse ciphered text this function is used.
+The ConvertTo-CipherText takes plain text and returns cipher text.  To reverse cipher text this function is used.
 
 .PARAMETER CipherText
-For instance, the plain text value of 'BOB' has a ciphered text value of 10410 (This repo converts text to Hexavigesimal values times 10).
+For instance, the plain text value of 'BOB' has a cipher text value of 10410 (This repo converts text to Hexavigesimal values times 10).
 
 .EXAMPLE
-C:\> ConvertTo-PlainTextValue 10410
+C:\> ConvertTo-PlainText 10410
 C:\> BOB
 
 .NOTES
 Referenced alphabet_encode in alphabet-encode-python repo:
     https://github.com/isaaguilar/alphabet-encode-python/blob/master/alphabet_cipher.py
 #>
-function ConvertTo-PlainTextValue {
+function ConvertTo-PlainText {
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $true,

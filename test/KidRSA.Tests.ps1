@@ -24,41 +24,41 @@ VERBOSE: The value of 'n' is: 23601241
 #>
 $script:BobsKeys = $(Get-RSAKey -a 80 -b 45 -a_ 95 -b_ 69)
 
-Describe "Test ConvertTo-CipheredTextValue" {
+Describe "Test ConvertTo-CipherText" {
     Context "with PlainText parameter being 'BO'" {
         InModuleScope KidRSA {
             It "Should return ciphertext in the value of: 400" -TestCases @(
                 @{  PlainText = "BO" }) {
                 Param($PlainText)
     
-                $Results = ConvertTo-CipheredTextValue $PlainText
+                $Results = ConvertTo-CipherText $PlainText
                 $Results | Should -Be 400
             }
         }
     }
 }
-Describe "Test ConvertTo-CipheredTextValue" {
+Describe "Test ConvertTo-CipherText" {
     Context "with PlainText parameter being 'BOB'" {
         InModuleScope KidRSA {
             It "Should return ciphertext in the value of: 10410" -TestCases @(
                 @{  PlainText = "BOB" }) {
                 Param($PlainText)
 
-                $Results = ConvertTo-CipheredTextValue $PlainText
+                $Results = ConvertTo-CipherText $PlainText
                 $Results | Should -Be 10410
             }
         }
     }
 }
 
-Describe "Test ConvertTo-PlainTextValue" {
+Describe "Test ConvertTo-PlainText" {
     Context "with CipherText parameter being 'BOB'" {
         InModuleScope KidRSA {
             It "Should return plaintext in the value of: 10410" -TestCases @(
                 @{  CipherText = 10410 }) {
                 Param($CipherText)
 
-                $Results = ConvertTo-PlainTextValue $CipherText -Verbose
+                $Results = ConvertTo-PlainText $CipherText -Verbose
                 $Results | Should -Be 'BOB'
             }
         }
