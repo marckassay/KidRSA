@@ -2,7 +2,7 @@
 
 After watching [How to Break Cryptography](https://www.youtube.com/watch?v=12Q3Mrh03Gk) and [This Video was Not Encrypted with RSA](https://www.youtube.com/watch?v=4Tb1q8dSIlI) my curiosity motivated me to demystify RSA cryptography.  Inspired by [Neal Koblitz](https://sites.math.washington.edu/~koblitz/)'s article [Cryptography As a Teaching Tool](https://sites.math.washington.edu/~koblitz/crlogia.html) this module was programmed following his 'Kid-RSA' example.
 
-The beauty of this demonstration is the simplicity of arithmetic operations to encrypt and decrypt.
+The beauty of this demonstration is the simplicity of arithmetic operations to encrypt and decrypt with a few computational steps.
 
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/marckassay/KidRSA/blob/master/LICENSE)  [![PS Gallery](https://img.shields.io/badge/install-PS%20Gallery-blue.svg)](https://www.powershellgallery.com/packages/KidRSA/)
 

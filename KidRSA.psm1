@@ -205,7 +205,9 @@ function ConvertTo-CipherText {
         [Parameter(Mandatory = $true,
             Position = 0,
             ValueFromPipeline = $false)]
-        [ValidateNotNullOrEmpty()]
+        [ValidateLength(1, 6)]
+        [ValidateScript( {$_[0] -ne 'A'})]
+        [ValidatePattern("[A-Z]")]
         [string]$PlainText
     )
 
@@ -238,7 +240,10 @@ C:\> ConvertTo-PlainText 10410
 C:\> BOB
 
 .NOTES
-Referenced alphabet_encode in alphabet-encode-python repo:
+Due to the simplicity of this demonstration ciphertext that start with 'A' will fail in this
+function.
+
+This function follows referenced alphabet_encode in alphabet-encode-python repo:
     https://github.com/isaaguilar/alphabet-encode-python/blob/master/alphabet_cipher.py
 #>
 function ConvertTo-PlainText {
@@ -257,12 +262,23 @@ function ConvertTo-PlainText {
     $Base26 = Get-IsomorphicMap -KeyType Numeric
     while ($Q -ne 0) {
         $Q = [System.Math]::DivRem($Q + 1, $Base26.Count, $R)
-        
+
         if ($R.Value -eq 0) {
             $Q = $Q - 1
+            $Base += $($Base26[$Base26.Count - 1])
         }
-        
-        $Base += $($Base26[$R.Value - 1])
+        else {
+            $Base += $($Base26[$R.Value - 1])
+        }
     }
-    $Base
+
+    if ($Base.Length -gt 1) {
+        # reverse the order of chars
+        $BaseChar = $Base.ToCharArray()
+        [array]::Reverse($BaseChar)
+        -join ($BaseChar)
+    }
+    else {
+        $Base
+    }
 }
