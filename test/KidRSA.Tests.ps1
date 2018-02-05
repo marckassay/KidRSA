@@ -23,29 +23,43 @@ VERBOSE: The value of Public key 'd' (decrypt) is: 248376
 VERBOSE: The value of 'n' is: 23601241
 #>
 $script:BobsKeys = $(Get-RSAKey -a 80 -b 45 -a_ 95 -b_ 69)
-<#
-    Describe "Test ConvertTo-CipherInt" {
-        Context "with PlainText parameter being 'BO'" {
-            InModuleScope KidRSA {
-                It "Should return ciphertext in the value of: 400" -TestCases @(
-                    @{  PlainText = "CP" }) {
-                    Param($PlainText)
+
+Describe "Test ConvertTo-CipheredTextValue" {
+    Context "with PlainText parameter being 'BO'" {
+        InModuleScope KidRSA {
+            It "Should return ciphertext in the value of: 400" -TestCases @(
+                @{  PlainText = "BO" }) {
+                Param($PlainText)
     
-                    $Results = ConvertTo-CipherInt $PlainText
-                    $Results | Should -Be 400
-                }
+                $Results = ConvertTo-CipheredTextValue $PlainText
+                $Results | Should -Be 400
             }
         }
     }
-Describe "Test ConvertTo-CipherInt" {
+}
+Describe "Test ConvertTo-CipheredTextValue" {
     Context "with PlainText parameter being 'BOB'" {
         InModuleScope KidRSA {
             It "Should return ciphertext in the value of: 10410" -TestCases @(
                 @{  PlainText = "BOB" }) {
                 Param($PlainText)
 
-                $Results = ConvertTo-CipherInt $PlainText
+                $Results = ConvertTo-CipheredTextValue $PlainText
                 $Results | Should -Be 10410
+            }
+        }
+    }
+}
+
+Describe "Test ConvertTo-PlainTextValue" {
+    Context "with CipherText parameter being 'BOB'" {
+        InModuleScope KidRSA {
+            It "Should return plaintext in the value of: 10410" -TestCases @(
+                @{  CipherText = 10410 }) {
+                Param($CipherText)
+
+                $Results = ConvertTo-PlainTextValue $CipherText -Verbose
+                $Results | Should -Be 'BOB'
             }
         }
     }
@@ -73,20 +87,6 @@ Describe "Test Get-RSAKey" {
             $Results.e | Should -Be 499
             $Results.d | Should -Be 795
             $Results.n | Should -Be 4048
-        }
-    }
-}
-#>
-Describe "Test ConvertTo-PlainText" {
-    Context "with CipherText parameter being 'BOB'" {
-        InModuleScope KidRSA {
-            It "Should return plaintext in the value of: 10410" -TestCases @(
-                @{  CipherText = 10410 }) {
-                Param($CipherText)
-
-                $Results = ConvertTo-PlainText $CipherText -Verbose
-                $Results | Should -Be 'BOB'
-            }
         }
     }
 }

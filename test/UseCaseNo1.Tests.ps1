@@ -12,25 +12,13 @@ VERBOSE: The value of 'n' is: 25648
 #>
 $script:AlicesKeys = $(Get-RSAKey -a 67 -b 63 -a_ 2 -b_ 3)
 
-<#
-BobsKeys
-VERBOSE: The value for 'a' is: 80
-VERBOSE: The value for 'b' is: 45
-VERBOSE: The value for 'a_' is: 95
-VERBOSE: The value for 'b_' is: 69
-VERBOSE: The value of Private key 'e' (encrypt) is: 341985
-VERBOSE: The value of Public key 'd' (decrypt) is: 248376
-VERBOSE: The value of 'n' is: 23601241
-#>
-$script:BobsKeys = $(Get-RSAKey -a 80 -b 45 -a_ 95 -b_ 69)
-
 Describe "Alice gives Bob her public key for that he can send her an encrypt message." {
     Context "Bob types his message in plain text and runs it thru an algorithm to be ciphered." {
         It "Should return cipher value of: 10410" -TestCases @(
             @{  PlainText = "BOB" }) {
             Param($PlainText)
 
-            $Results = ConvertTo-CipherInt $PlainText
+            $Results = ConvertTo-CipheredTextValue $PlainText
             $Results | Should -Be 10410
         }
     }
@@ -43,7 +31,7 @@ Describe "Alice gives Bob her public key for that he can send her an encrypt mes
             }) {
             Param($CipherText, $PublicKey, $N)
 
-            $Results = Step-PublicEncryptKey -CipherText $CipherText -PublicKey $PublicKey -N $N -Verbose
+            $Results = ConvertTo-PublicEncryptionValue -CipherText $CipherText -PublicKey $PublicKey -N $N -Verbose
             $Results | Should -Be 20974
         }
     }
@@ -56,16 +44,15 @@ Describe "Alice gives Bob her public key for that he can send her an encrypt mes
             }) {
             Param($EncryptedCipherText, $PrivateKey, $N)
 
-            $Results = Step-PrivateDecryptKey -EncryptedCipherText $EncryptedCipherText -PrivateKey $PrivateKey -N $N -Verbose
+            $Results = ConvertTo-PrivateDecryptionValue -EncryptedCipherText $EncryptedCipherText -PrivateKey $PrivateKey -N $N -Verbose
             $Results | Should -Be 10410
-
         }
     }
 
     Context "Alice takes the ciphered text (10410) and runs it thru the cipher's decode function." {
         It "Should return plain text in the value of: 'BOB'" {
             $CipherText = 10410
-            ConvertTo-PlainText $CipherText -Verbose | Should -Be 'BOB'
+            ConvertTo-PlainTextValue $CipherText -Verbose | Should -Be 'BOB'
         }
     }
 }

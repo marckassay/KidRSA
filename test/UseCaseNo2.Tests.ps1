@@ -30,7 +30,7 @@ Describe "Alice gives Bob her public key for that he can send her an encrypt mes
             @{  PlainText = "BOB" }) {
             Param($PlainText)
 
-            $Results = ConvertTo-CipherInt $PlainText
+            $Results = ConvertTo-CipheredTextValue $PlainText
             $Results | Should -Be 10410
         }
     }
@@ -43,7 +43,7 @@ Describe "Alice gives Bob her public key for that he can send her an encrypt mes
             }) {
             Param($CipherText, $PublicKey, $N)
 
-            $Results = Step-PublicEncryptKey -CipherText $CipherText -PublicKey $PublicKey -N $N -Verbose
+            $Results = ConvertTo-PublicEncryptionValue -CipherText $CipherText -PublicKey $PublicKey -N $N -Verbose
             $Results | Should -Be 20974
         }
     }
@@ -56,7 +56,7 @@ Describe "Alice gives Bob her public key for that he can send her an encrypt mes
             }) {
             Param($EncryptedCipherText, $PrivateKey, $N)
 
-            $Results = Step-PrivateDecryptKey -EncryptedCipherText $EncryptedCipherText -PrivateKey $PrivateKey -N $N -Verbose
+            $Results = ConvertTo-PrivateDecryptionValue -EncryptedCipherText $EncryptedCipherText -PrivateKey $PrivateKey -N $N -Verbose
             $Results | Should -Be 10410
         }
     }
