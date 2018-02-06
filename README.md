@@ -6,7 +6,7 @@ The beauty of this demonstration is the simplicity of arithmetic operations to e
 
 This demonstration (just as the article's example) explains the following two procedures:
 
-* How to convert plain text message into simple-substitution cipher that gets encrypted by the sender and then decrypted by the recipient.  The recipetant then runs, the now decrypted cipher, thru an inverse simple-substitution algorithm.
+* How to convert plain text message into simple-substitution cipher that gets encrypted by the sender and then decrypted by the recipient.  The recipient then runs, the now decrypted cipher, thru an inverse simple-substitution algorithm to retrieve the plain text message.
 
 * How a digital signature is created and sent.
 
