@@ -2,61 +2,69 @@ Import-Module -Name $PSScriptRoot\..\KidRSA.psm1 -Verbose -Force
 
 <#
 AlicesKeys
-VERBOSE: The value for 'a' is: 67
-VERBOSE: The value for 'b' is: 63
-VERBOSE: The value for 'a_' is: 2
-VERBOSE: The value for 'b_' is: 3
-VERBOSE: The value of Private key 'e' (encrypt) is: 8507
-VERBOSE: The value of Public key 'd' (decrypt) is: 12723
-VERBOSE: The value of 'n' is: 25648
+VERBOSE: The value for 'a' is: 672
+VERBOSE: The value for 'b' is: 263
+VERBOSE: The value for 'a_' is: 342
+VERBOSE: The value for 'b_' is: 543
+VERBOSE: The value of Private key 'e' (encrypt) is: 60444042
+VERBOSE: The value of Public key 'd' (decrypt) is: 95967368
+VERBOSE: The value of 'n' is: 32821204753
 #>
-$script:AlicesKeys = $(Get-RSAKey -a 67 -b 63 -a_ 2 -b_ 3)
+$script:AlicesKeys = $(Get-RSAKey -a 672 -b 263 -a_ 342 -b_ 543)
+$script:PlainText = "HELLO"
+$script:CipherText = 32768720
+$script:EncryptedCipherText = 12644736949
 
-Describe "Alice gives Bob her public key for that he can send her an encrypt message." {
-    Context "Bob types his message in plain text and runs it thru an algorithm to be cipher." {
-        It "Should return cipher value of: 1900" -TestCases @(
-            @{  PlainText = "HI" }) {
-            Param($PlainText)
+Describe "Alice gives Bob her public key for that he can send her an encrypted message." {
 
-            $Results = ConvertTo-CipherText $PlainText
-            $Results | Should -Be 1900
-        }
+    It "Bob types his message ('<PlainText>') in plaintext and runs it thru a simple-substitution
+    cipher algorithm. Should return ciphertext value of: <ExpectedResult>" -TestCases @(@{
+            PlainText      = $script:PlainText
+            ExpectedResult = $script:CipherText
+        }) {
+        Param($PlainText, $ExpectedResult)
+
+        $Results = ConvertTo-CipherText $PlainText
+        $Results | Should -Be $ExpectedResult
     }
 
-    Context "Bob then takes cipher text and runs it thru another algorithm with Alice's public key 
-    (e and n)." {
-        It "Should return encrypted cipher text in the value of: 5060" -TestCases @(
-            @{  CipherText = 1900
-                PublicKey  = $script:AlicesKeys.e
-                N          = $script:AlicesKeys.n
-            }) {
-            Param($CipherText, $PublicKey, $N)
+    It "Bob then takes ciphertext (<CipherText>) and runs it thru the RSA encryption algorithm with
+     Alice's public key (e and n). Should return encrypted ciphertext in the value 
+     of: <ExpectedResult>" -TestCases @(@{
+            CipherText     = $script:CipherText
+            PublicKey      = $script:AlicesKeys.e
+            N              = $script:AlicesKeys.n
+            ExpectedResult = $script:EncryptedCipherText
+        }) {
+        Param($CipherText, $PublicKey, $N, $ExpectedResult)
 
-            $Results = ConvertTo-PublicEncryptionValue -CipherText $CipherText `
-                -PublicKey $PublicKey -N $N -Verbose
-            $Results | Should -Be 5060
-        }
+        $Results = ConvertTo-PublicEncryptionValue -CipherText $CipherText `
+            -PublicKey $PublicKey -N $N -Verbose
+        $Results | Should -Be $ExpectedResult
     }
 
-    Context "Alice recieves Bob's encrypted message and runs it thru an algorithm to decrypt it with
-     her private key." {
-        It "Should return cipher text in the value of: 1900" -TestCases @(
-            @{  EncryptedCipherText = 5060
-                PrivateKey          = $script:AlicesKeys.d
-                N                   = $script:AlicesKeys.n
-            }) {
-            Param($EncryptedCipherText, $PrivateKey, $N)
+    It "Alice receives Bob's encrypted message (<EncryptedCipherText>) and sends it thru the RSA
+     decryption algorithm.  Should return Bob's ciphertext value which is:
+     <ExpectedResult>" -TestCases @(@{
+            EncryptedCipherText = $script:EncryptedCipherText
+            PrivateKey          = $script:AlicesKeys.d
+            N                   = $script:AlicesKeys.n
+            ExpectedResult      = $script:CipherText
+        }) {
+        Param($EncryptedCipherText, $PrivateKey, $N, $ExpectedResult)
 
-            $Results = ConvertTo-PrivateDecryptionValue -EncryptedCipherText $EncryptedCipherText `
-                -PrivateKey $PrivateKey -N $N -Verbose
-            $Results | Should -Be 1900
-        }
+        $Results = ConvertTo-PrivateDecryptionValue -EncryptedCipherText $EncryptedCipherText `
+            -PrivateKey $PrivateKey -N $N -Verbose
+        $Results | Should -Be $ExpectedResult
     }
 
-    Context "Alice takes the cipher text (1900) and runs it thru the cipher's decode function." {
-        It "Should return plain text in the value of: 'HI'" {
-            $CipherText = 1900
-            ConvertTo-PlainText $CipherText -Verbose | Should -Be 'HI'
-        }
+    It "Alice takes the ciphertext (<CipherText>) and runs it thru the simple-substitution cipher's 
+    decode (inverse) algorithm to get the plaintext message of: '<ExpectedResult>'" -TestCases @(@{
+            CipherText     = $script:CipherText
+            ExpectedResult = $script:PlainText
+        }) {
+        Param($CipherText, $ExpectedResult)
+
+        ConvertTo-PlainText $CipherText -Verbose | Should -Be $ExpectedResult
     }
 }

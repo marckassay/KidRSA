@@ -29,9 +29,9 @@ Describe "Test asymetric key generation" {
         It "Should auto-generate keys" {
             $Results = Get-RSAKey
             $Results.GetType().Name | Should -Be 'AsymmetricKeys'
-            $Results.e | Should -BeOfType int
-            $Results.d | Should -BeOfType int
-            $Results.n | Should -BeOfType int
+            $Results.e | Should -BeOfType Int64
+            $Results.d | Should -BeOfType Int64
+            $Results.n | Should -BeOfType Int64
         }
         It "Should return an encryption key of '<e>' and a decryption key of '<d>'." -TestCases @(@{
                 a  = 9
@@ -171,6 +171,20 @@ Describe "Test Encoding and Decoding" {
         '<PlainText>'." -TestCases @(@{
                 PlainText  = 'HELLOA'
                 CipherText = 851986720
+            }) {
+            Param($PlainText, $CipherText)
+            $OriginalPlainText = $PlainText
+            $OriginalCipherText = $CipherText
+            $CipherText = ConvertTo-CipherText $PlainText
+            $CipherText | Should -Be $OriginalCipherText
+
+            $PlainText = ConvertTo-PlainText $CipherText
+            $PlainText | Should -Be $OriginalPlainText
+        }
+        It "Should encode '<PlainText>' to '<CipherText>' and decode that value back to 
+        '<PlainText>'." -TestCases @(@{
+                PlainText  = 'HELLOALICE'
+                CipherText = 389337485346720
             }) {
             Param($PlainText, $CipherText)
             $OriginalPlainText = $PlainText

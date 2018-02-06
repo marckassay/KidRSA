@@ -11,13 +11,13 @@ To be used to encrypt and decrypt cipher text values.
 Any integer in the range of 1-100.
 
 .PARAMETER b
-Any integer in the range of 1-100.
+Any integer in the range of 1-1000.
 
 .PARAMETER a_
-Any integer in the range of 1-100.
+Any integer in the range of 1-1000.
 
 .PARAMETER b_
-Any integer in the range of 1-100.
+Any integer in the range of 1-1000.
 
 .EXAMPLE
 C:\> $AlicesKeys = Get-RSAKey -a 67 -b 63 -a_ 2 -b_ 3
@@ -37,16 +37,16 @@ function Get-RSAKey {
     [OutputType([AsymmetricKeys])]
     Param(
         [Parameter(Mandatory = $false)]
-        [int]$a = $(Get-Random -Minimum -1 -Maximum 100),
+        [long]$a = $(Get-Random -Minimum -1 -Maximum 1000),
 
         [Parameter(Mandatory = $false)]
-        [int]$b = $(Get-Random -Minimum -1 -Maximum 100),
+        [long]$b = $(Get-Random -Minimum -1 -Maximum 1000),
 
         [Parameter(Mandatory = $false)]
-        [int]$a_ = $(Get-Random -Minimum -1 -Maximum 100),
+        [long]$a_ = $(Get-Random -Minimum -1 -Maximum 1000),
 
         [Parameter(Mandatory = $false)]
-        [int]$b_ = $(Get-Random -Minimum -1 -Maximum 100)
+        [long]$b_ = $(Get-Random -Minimum -1 -Maximum 1000)
     )
 
     Write-Verbose -Message "The value for 'a' is: $($a)"
@@ -94,19 +94,19 @@ function ConvertTo-PrivateDecryptionValue {
     Param(
         [Parameter(Mandatory = $false)]
         [ValidateNotNull()]
-        [int]$EncryptedCipherText,
+        [long]$EncryptedCipherText,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNull()]
         [Alias("DecryptionKey")]
-        [int]$PrivateKey,
+        [long]$PrivateKey,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNull()]
-        [int]$N
+        [long]$N
     )
     $CipherText = ($PrivateKey * $EncryptedCipherText) % $N
-    Write-Verbose -Message "Decrypted cipher value is : $($CipherText)"
+    Write-Verbose -Message "(Decrypted) Ciphertext value is : $($CipherText)"
     $CipherText
 }
 
@@ -140,19 +140,19 @@ function ConvertTo-PublicEncryptionValue {
     Param(
         [Parameter(Mandatory = $true)]
         [ValidateNotNull()]
-        [int]$CipherText,
+        [long]$CipherText,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNull()]
         [Alias("EncryptionKey")]
-        [int]$PublicKey,
+        [long]$PublicKey,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNull()]
-        [int]$N
+        [long]$N
     )
     $EncryptedCipherText = ($PublicKey * $CipherText) % $N
-    Write-Verbose -Message "Encrypted cipher value is : $($EncryptedCipherText)"
+    Write-Verbose -Message "Encrypted ciphertext value is : $($EncryptedCipherText)"
     $EncryptedCipherText
 }
 
@@ -215,7 +215,7 @@ function ConvertTo-CipherText {
         [Parameter(Mandatory = $true,
             Position = 0,
             ValueFromPipeline = $false)]
-        [ValidateLength(1, 6)]
+        #[ValidateLength(1, 6)]
         [ValidateScript( {$_[0] -ne 'A'})]
         [ValidatePattern("[A-Z]")]
         [string]$PlainText
@@ -265,22 +265,24 @@ function ConvertTo-PlainText {
             Position = 1,
             ValueFromPipeline = $false)]
         [ValidateNotNullOrEmpty()]
-        [int]$CipherText
+        [long]$CipherText
     )
     
-    [int]$Q = $($CipherText / 10)
-    [ref]$R = 0
+    [long]$Q = $($CipherText / 10)
+    [long]$R = 0
 
     $Base26 = Get-IsomorphicMap -KeyType Numeric
     while ($Q -ne 0) {
-        $Q = [System.Math]::DivRem($Q + 1, $Base26.Count, $R)
-
-        if ($R.Value -eq 0) {
+        $Q = Update-QuotientAndRemainder $Q ([ref]$R) -Map $Base26
+        if ($R -eq 0) {
             $Q = $Q - 1
             $Base += $($Base26[$Base26.Count - 1])
         }
         else {
-            $Base += $($Base26[$R.Value - 1])
+            # keep $Key as an 'int' otherwise it will not work when indexing $Base26
+            [int]$Key = $R - 1
+            $Char = $Base26[$Key]
+            $Base += $Char
         }
     }
 
@@ -291,7 +293,34 @@ function ConvertTo-PlainText {
         $Base = -join ($BaseChar)
     }
 
-    Write-Verbose -Message "PlainText value is : $Base"
+    Write-Verbose -Message "Plaintext value is : $Base"
 
     $Base
+}
+
+# this method has been created to have $R being typed and ref (referenced).
+function Update-QuotientAndRemainder {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory = $true,
+            Position = 1,
+            ValueFromPipeline = $false)]
+        [ValidateNotNullOrEmpty()]
+        $Q,
+        
+        [Parameter(Mandatory = $true,
+            Position = 2,
+            ValueFromPipeline = $false)]
+        [ValidateNotNullOrEmpty()]       
+        $R,
+        
+        [Parameter(Mandatory = $true,
+            Position = 3,
+            ValueFromPipeline = $false)]
+        [ValidateNotNullOrEmpty()]
+        $Map
+    )
+
+    $Q = [System.Math]::DivRem($Q + 1, $Map.Count, $R)
+    $Q
 }
