@@ -24,8 +24,10 @@ VERBOSE: The value of 'n' is: 23601241
 #>
 $script:BobsKeys = $(Get-RSAKey -a 80 -b 45 -a_ 95 -b_ 69)
 
-Describe "Alice gives Bob her public key for that he can send her an encrypt message." {
-    Context "Bob types his message in plain text and runs it thru an algorithm to be cipher." {
+Describe "Bob sends Alice his digital signature." {
+    Context "Bob uses the plain text value of 'BOB' to be his digital signature.  A 
+    simple-substitution cipher is acheived by ConvertTo-CipherText.  The output of passing the value
+    'BOB' is 10410." {
         It "Should return cipher value of: 10410" -TestCases @(
             @{  PlainText = "BOB" }) {
             Param($PlainText)
@@ -35,29 +37,39 @@ Describe "Alice gives Bob her public key for that he can send her an encrypt mes
         }
     }
 
-    Context "Bob then takes cipher text and runs it thru another algorithm with Alice's public key (e and n)." {
-        It "Should return encrypted cipher text in the value of: 20974" -TestCases @(
-            @{  CipherText = 10410
-                PublicKey  = $script:AlicesKeys.e
-                N          = $script:AlicesKeys.n
+    Context "Since he is creating a digital signature, Bob then takes this cipher text and multiples
+    it with his private key and modulate with n.  And with that value he multiples it by 'e mod n'. 
+    So the equation is:
+     d'*s modulo n' * (e modulo n)." {
+        It "Should return encrypted cipher text in the value of: 111091985737" -TestCases @(
+            @{  CipherText  = 10410
+                APublicKey  = $script:AlicesKeys.e
+                AN          = $script:AlicesKeys.n
+                BPrivateKey = $script:BobsKeys.d
+                BN          = $script:BobsKeys.n
             }) {
-            Param($CipherText, $PublicKey, $N)
+            Param($CipherText, $APublicKey, $AN, $BPrivateKey, $BN)
+            $Result1 = ($BPrivateKey * $CipherText) % $BN
+            $Results = $Result1 * $($APublicKey % $AN)
 
-            $Results = ConvertTo-PublicEncryptionValue -CipherText $CipherText -PublicKey $PublicKey -N $N -Verbose
-            $Results | Should -Be 20974
+            $Results | Should -Be 111091985737
         }
     }
 
-    Context "Alice recieves Bob's encrypted message and runs it thru an algorithm to decrypt it with her private key." {
-        It "Should return cipher text in the value of: 10410" -TestCases @(
-            @{  EncryptedCipherText = 20974
-                PrivateKey          = $script:AlicesKeys.d
-                N                   = $script:AlicesKeys.n
+    Context "Alice recieves Bob's encrypted message (digital signature) and does similar computation
+     steps. The value that is returned is Bob's digital signature." {
+        It "Should return cipher text in the value of: 55358729197065" -TestCases @(
+            @{  EncryptedCipherText = 111091985737
+                APrivateKey         = $script:AlicesKeys.d
+                AN                  = $script:AlicesKeys.n
+                BPublicKey          = $script:BobsKeys.e
+                BN                  = $script:BobsKeys.n
             }) {
-            Param($EncryptedCipherText, $PrivateKey, $N)
+            Param($EncryptedCipherText, $APrivateKey, $AN, $BPublicKey, $BN)
+            $Result1 = $APrivateKey * $($APrivateKey % $AN)
+            $Results = $Result1 * $($BPublicKey % $BN)
 
-            $Results = ConvertTo-PrivateDecryptionValue -EncryptedCipherText $EncryptedCipherText -PrivateKey $PrivateKey -N $N -Verbose
-            $Results | Should -Be 10410
+            $Results | Should -Be 55358729197065
         }
     }
 }

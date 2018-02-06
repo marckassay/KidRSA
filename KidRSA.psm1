@@ -68,16 +68,20 @@ function Get-RSAKey {
 Decrypts the value from ConvertTo-PublicEncryptionValue function
 
 .DESCRIPTION
-Given a private and public key from Get-RSAKey function, the public key is used to encrypt a cipher text via ConvertTo-PublicEncryptionValue function.  The value from that function is used in this function to decrypt it using the private (d) key.
+Given a private and public key from Get-RSAKey function, the public key is used to encrypt a cipher 
+text via ConvertTo-PublicEncryptionValue function.  The value from that function is used in this 
+function to decrypt it using the private (d) key.
 
 .PARAMETER EncryptedCipherText
 The value from ConvertTo-PublicEncryptionValue
 
 .PARAMETER PrivateKey
-The private key to decrypt EncryptedCipherText parameter.  This is typically represented in mathematical operations as the letter 'd'.
+The private key to decrypt EncryptedCipherText parameter.  This is typically represented in 
+mathematical operations as the letter 'd'.
 
 .PARAMETER N
-The key modulus of PrivateKey parameter value. This is typically represented in mathematical operations as the letter 'n'.
+The key modulus of PrivateKey parameter value. This is typically represented in mathematical 
+operations as the letter 'n'.
 
 .EXAMPLE
 An example
@@ -94,15 +98,16 @@ function ConvertTo-PrivateDecryptionValue {
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNull()]
+        [Alias("DecryptionKey")]
         [int]$PrivateKey,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNull()]
         [int]$N
     )
-    $PlainTextValue = ($PrivateKey * $EncryptedCipherText) % $N
-    Write-Verbose -Message "PlainTextValue value is : $($PlainTextValue)"
-    $PlainTextValue
+    $CipherText = ($PrivateKey * $EncryptedCipherText) % $N
+    Write-Verbose -Message "Decrypted cipher value is : $($CipherText)"
+    $CipherText
 }
 
 <#
@@ -110,17 +115,20 @@ function ConvertTo-PrivateDecryptionValue {
 Encrypts the value from ConvertTo-CipherText function
 
 .DESCRIPTION
-Given a private and public key from Get-RSAKey function, the public key is used to encrypt cipher text.  The value returned from this 
-function is used in the ConvertTo-PrivateDecryptionValue function to decrypt it.
+Given a private and public key from Get-RSAKey function, the public key is used to encrypt cipher 
+text.  The value returned from this function is used in the ConvertTo-PrivateDecryptionValue 
+function to decrypt it.
 
 .PARAMETER CipherText
 The value from ConvertTo-PublicEncryptionValue
 
 .PARAMETER PublicKey
-The public key to encrypt CipherText parameter.  This is typically represented in mathematical operations as the letter 'e'.
+The public key to encrypt CipherText parameter.  This is typically represented in mathematical 
+operations as the letter 'e'.
 
 .PARAMETER N
-The key modulus of PublicKey parameter value. This is typically represented in mathematical operations as the letter 'n'.
+The key modulus of PublicKey parameter value. This is typically represented in mathematical 
+operations as the letter 'n'.
 
 .EXAMPLE
 An example
@@ -136,6 +144,7 @@ function ConvertTo-PublicEncryptionValue {
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNull()]
+        [Alias("EncryptionKey")]
         [int]$PublicKey,
 
         [Parameter(Mandatory = $true)]
@@ -187,7 +196,8 @@ function Get-IsomorphicMap {
 Returns cipher text from plain text.
 
 .DESCRIPTION
-Pass an alpha only string to this function to get a cipher text value.
+Pass an alphabetic, with a length no greater then 6 to this function to get a cipher text value.  In
+cryptography, this algorithm is referred to more specifically as 'simple-substitution' cipher.
 
 .PARAMETER PlainText
 Message to convert to cipher text
@@ -197,7 +207,7 @@ C:\> ConvertTo-PlainText 'BOB'
 C:\> 10410
 
 .NOTES
-This repo multiples the value by 10.
+This function will multiple the value by 10 before returning.
 #>
 function ConvertTo-CipherText {
     [CmdletBinding()]
@@ -230,10 +240,12 @@ function ConvertTo-CipherText {
 Returns plain text from cipher text.
 
 .DESCRIPTION
-The ConvertTo-CipherText takes plain text and returns cipher text.  To reverse cipher text this function is used.
+The ConvertTo-CipherText takes plain text and returns cipher text.  To reverse cipher text this 
+function is used.
 
 .PARAMETER CipherText
-For instance, the plain text value of 'BOB' has a cipher text value of 10410 (This repo converts text to Hexavigesimal values times 10).
+For instance, the plain text value of 'BOB' has a cipher text value of 10410 (This repo converts 
+text to Hexavigesimal values times 10).
 
 .EXAMPLE
 C:\> ConvertTo-PlainText 10410
@@ -276,9 +288,10 @@ function ConvertTo-PlainText {
         # reverse the order of chars
         $BaseChar = $Base.ToCharArray()
         [array]::Reverse($BaseChar)
-        -join ($BaseChar)
+        $Base = -join ($BaseChar)
     }
-    else {
-        $Base
-    }
+
+    Write-Verbose -Message "PlainText value is : $Base"
+
+    $Base
 }
